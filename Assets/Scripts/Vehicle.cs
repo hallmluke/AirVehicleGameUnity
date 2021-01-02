@@ -59,6 +59,7 @@ public class Vehicle : MonoBehaviour
     public float GlidingPitchRate;
     [Tooltip("Affects how quickly/easily vehicle can take off. This is multiplied by horizontal velocity squared to get upward force. Reasonable base: .045")]
     public float LiftCoefficient;
+    public float OptimalLiftAngle;
     public float TopAerialHorizontalSpeed;
     public float AerialHorizontalDragCoefficient;
     public float TopAerialVerticalSpeed;
@@ -128,7 +129,15 @@ public class Vehicle : MonoBehaviour
 
             rb.AddForce(transform.forward * GlidingAcceleration);
             Vector3 HorizontalVelocity = Vector3.ProjectOnPlane(rb.velocity, Vector3.up);
-            float LiftMagnitude = HorizontalVelocity.magnitude * HorizontalVelocity.magnitude * LiftCoefficient;
+            /*Vector3 InclineVector = Vector3.ProjectOnPlane(transform.forward, transform.right);*/
+            //Debug.DrawRay(transform.position, InclineVector, Color.green);
+            Vector3 HorizontalVec = transform.forward;
+            HorizontalVec.y = 0;
+            float InclineAngle = Vector3.SignedAngle(transform.forward, HorizontalVec, transform.right);
+            Debug.Log("Incline Angle: " + InclineAngle);
+            float InclineModifier = 1 - Mathf.Min(1, Mathf.Abs((OptimalLiftAngle - InclineAngle) / 90.0f));
+            Debug.Log("Incline Modifier: " + InclineModifier);
+            float LiftMagnitude = HorizontalVelocity.magnitude * HorizontalVelocity.magnitude * LiftCoefficient * InclineModifier;
 
             rb.AddForce(Vector3.up * LiftMagnitude);
             float Pitch = Input.GetAxisRaw("Vertical");
