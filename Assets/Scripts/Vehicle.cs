@@ -64,6 +64,8 @@ public class Vehicle : MonoBehaviour
     public float AerialHorizontalDragCoefficient;
     public float TopAerialVerticalSpeed;
     public float AerialVerticalDragCoefficient;
+    public float TerminalVelocity;
+    public float TerminalVelocityDragCoefficient;
 
     // State Booleans
     bool IsBraking;
@@ -73,6 +75,7 @@ public class Vehicle : MonoBehaviour
     void Start()
     {
         rb.centerOfMass = new Vector3(0, -1.5f, 0);
+        InvokeRepeating("SendSpeedNotification", 0.0f, 0.2f);
     }
 
     // Using fixed update due to physics system
@@ -80,7 +83,13 @@ public class Vehicle : MonoBehaviour
     {
         //TODO Separate camera logic, add more robust camera system
         CameraRig.position = Vector3.Lerp(CameraRig.position, rb.position, CameraSpeed * Time.deltaTime);
-        CameraRig.rotation = Quaternion.Slerp(CameraRig.rotation, rb.rotation, 0.04f);
+        Vector3 TargetRotationEuler = rb.rotation.eulerAngles;
+
+        if(!IsGliding) {
+            TargetRotationEuler.x = 0;
+            TargetRotationEuler.z = 0;
+        }
+        CameraRig.rotation = Quaternion.Slerp(CameraRig.rotation, Quaternion.Euler(TargetRotationEuler), 0.04f);
 
         ApplySuspension(BackLeft, ref PreviousBackLeftDistance, ref BackLeftHit, ref IsBackLeftOnGround);
         ApplySuspension(BackRight, ref PreviousBackRightDistance, ref BackRightHit, ref IsBackRightOnGround);
@@ -152,11 +161,17 @@ public class Vehicle : MonoBehaviour
             float VerticalSpeed = rb.velocity.y;
             if(VerticalSpeed > TopAerialVerticalSpeed) {
                 rb.AddForce(Vector3.down * AerialVerticalDragCoefficient);
+            } else if (VerticalSpeed < -TerminalVelocity) {
+                Debug.Log("Reached terminal velocity");
+                rb.AddForce(Vector3.up * TerminalVelocityDragCoefficient);
             }
 
         }
 
+    }
 
+    void SendSpeedNotification() {
+        this.PostNotification("VehicleSpeed", rb.velocity.magnitude);
     }
 
     void ApplySuspension(Transform CornerTransform, ref float PreviousDistance, ref RaycastHit hit, ref bool isHitting)
