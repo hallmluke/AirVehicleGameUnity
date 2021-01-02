@@ -187,7 +187,7 @@ public class Vehicle : MonoBehaviour
         // TODO: This is supposed to make walls feel "bouncy", but currently just makes the vehicle go spastic on collisions
         List<ContactPoint> contactPoints = new List<ContactPoint>();
         collision.GetContacts(contactPoints);
-        rb.AddForceAtPosition(collision.impulse, contactPoints[0].point, ForceMode.Impulse);
+        rb.AddForce(collision.impulse, ForceMode.Impulse);
 
     }
 
