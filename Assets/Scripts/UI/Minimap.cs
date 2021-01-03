@@ -10,8 +10,10 @@ public class Minimap : MonoBehaviour
     public Vector3 MapSize;
 
     public Dictionary<string, Image> Markers = new Dictionary<string, Image>();
+    public GameObject map;
     public Transform vehicle; // Testing
     public Image vehicleIcon; // Testing
+    public GameObject itemIcon; // Testing
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +25,50 @@ public class Minimap : MonoBehaviour
     void Update()
     {
         UpdateMarkerPosition("Player", vehicle.position);
+    }
+
+    void OnEnable() {
+        this.AddObserver(SpawnItemMarker, "SpawnedItem");
+        this.AddObserver(DespawnItemMarker, "DespawnedItem");
+    }
+
+    void OnDisable() {
+        this.RemoveObserver(SpawnItemMarker, "SpawnedItem");
+        this.RemoveObserver(DespawnItemMarker, "DespawnedItem");
+    }
+
+    void SpawnItemMarker(object sender, object args) {
+        GameObject ItemObject = args as GameObject;
+        ItemPickup ItemComp = ItemObject.GetComponent<ItemPickup>();
+
+        if(ItemComp == null) {
+            Debug.LogError("Tried to spawn an item marker in minimap for something that is not an item.");
+            return;
+        }
+
+        CreateNewMarker(ItemComp.ItemId, ItemComp.transform.position);
+    }
+
+    void DespawnItemMarker(object sender, object args) {
+        GameObject ItemObject = args as GameObject;
+        ItemPickup ItemComp = ItemObject.GetComponent<ItemPickup>();
+        if(!Markers.ContainsKey(ItemComp.ItemId)) {
+            Debug.LogError("Attempted to delete marker in minimap that is not registered.");
+            return;
+        }
+
+        Image Marker = Markers[ItemComp.ItemId];
+        Markers.Remove(ItemComp.ItemId);
+        Destroy(Marker.gameObject);
+
+    }
+
+    void CreateNewMarker(string MarkerId, Vector3 WorldPosition) {
+        GameObject NewMarker = Instantiate(itemIcon);
+        NewMarker.transform.SetParent(map.transform);
+        Image MarkerImage = NewMarker.GetComponent<Image>();
+        Markers.Add(MarkerId, MarkerImage);
+        UpdateMarkerPosition(MarkerId, WorldPosition);
     }
 
     void UpdateMarkerPosition(string MarkerId, Vector3 WorldPosition) {
