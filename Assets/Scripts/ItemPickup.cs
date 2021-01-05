@@ -5,11 +5,12 @@ using UnityEngine;
 public class ItemPickup : MonoBehaviour
 {
     public string ItemId;
+    public HeldItem heldItem;
     // Start is called before the first frame update
     void Start()
     {
         ItemId = System.Guid.NewGuid().ToString();
-        this.PostNotification("SpawnedItem", gameObject);
+        this.PostNotification("SpawnedItemPickup", gameObject);
     }
 
     // Update is called once per frame
@@ -20,8 +21,12 @@ public class ItemPickup : MonoBehaviour
 
     void OnTriggerEnter(Collider other) {
         Debug.Log("Item entered");
-        if(other.GetComponent<Vehicle>() != null) {
-            this.PostNotification("DespawnedItem", gameObject);
+        Vehicle collidedVehicle = other.GetComponent<Vehicle>();
+        if(collidedVehicle != null) {
+            collidedVehicle.Item1 = heldItem;
+            heldItem.owner = collidedVehicle;
+            this.PostNotification("HeldItemAcquired", heldItem);
+            this.PostNotification("DespawnedItemPickup", gameObject);
             Destroy(gameObject);
         }
     }

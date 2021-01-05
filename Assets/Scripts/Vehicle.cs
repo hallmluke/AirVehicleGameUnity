@@ -9,6 +9,8 @@ public class Vehicle : MonoBehaviour
     public Transform CameraRig;
     public float CameraSpeed;
 
+    public HeldItem Item1;
+
     [Header("Suspension Points")]
     public Transform BackLeft;
     public Transform BackRight;
@@ -168,6 +170,17 @@ public class Vehicle : MonoBehaviour
 
         }
 
+        ItemUse();
+
+    }
+
+    void ItemUse() {
+        if(Input.GetKey(KeyCode.E)){
+            if(Item1 != null) {
+                Item1.UseItem();
+                Item1 = null;
+            }
+        }
     }
 
     void SendSpeedNotification() {
@@ -202,7 +215,7 @@ public class Vehicle : MonoBehaviour
         // TODO: This is supposed to make walls feel "bouncy", but currently just makes the vehicle go spastic on collisions
         List<ContactPoint> contactPoints = new List<ContactPoint>();
         collision.GetContacts(contactPoints);
-        rb.AddForce(collision.impulse, ForceMode.Impulse);
+        rb.AddForceAtPosition(collision.impulse, rb.worldCenterOfMass, ForceMode.Impulse);
 
     }
 

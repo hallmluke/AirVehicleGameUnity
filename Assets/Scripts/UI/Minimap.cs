@@ -28,13 +28,13 @@ public class Minimap : MonoBehaviour
     }
 
     void OnEnable() {
-        this.AddObserver(SpawnItemMarker, "SpawnedItem");
-        this.AddObserver(DespawnItemMarker, "DespawnedItem");
+        this.AddObserver(SpawnItemMarker, "SpawnedItemPickup");
+        this.AddObserver(DespawnItemMarker, "DespawnedItemPickup");
     }
 
     void OnDisable() {
-        this.RemoveObserver(SpawnItemMarker, "SpawnedItem");
-        this.RemoveObserver(DespawnItemMarker, "DespawnedItem");
+        this.RemoveObserver(SpawnItemMarker, "SpawnedItemPickup");
+        this.RemoveObserver(DespawnItemMarker, "DespawnedItemPickup");
     }
 
     void SpawnItemMarker(object sender, object args) {
